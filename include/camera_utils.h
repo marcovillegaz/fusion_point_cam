@@ -13,6 +13,5 @@ extern WebServer server;
 
 // Initializes the camera and returns true if successful
 bool initCamera();
-void handleSettingsPage();
-void handleCameraSettingUpdate();
 bool applyCameraSettingsFromJSON(const char *path = "/camera_settings.json");
+bool saveCameraSettingsToJSON(const char *path = "/camera_settings.json");
