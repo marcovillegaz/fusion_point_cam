@@ -3,8 +3,8 @@
 #include "camera_utils.h"
 #include "web_server.h"
 
-const char *ssid = "VTR-1334483";
-const char *password = "Vq3pqvcxhMcy";
+#include "secrets.h" // Include your WiFi credentials here
+
 // IPAddress staticIP(192, 168, 1, 184); // Optional static IP
 IPAddress local_IP(0, 0, 0, 0); // forces DHCP instead of static
 
@@ -17,7 +17,18 @@ void setup()
     // testWebServer();                    // Setup web server (shows a simple HTML page)
 
     // Initialize camera
-    initCamera(); // add try and catch
+    if (!initCamera())
+    {
+        Serial.println("Camera initialization failed!");
+        while (1)
+            delay(100);
+    }
+
+    // Load saved settings
+    if (!applyCameraSettingsFromJSON())
+    {
+        Serial.println("Using default camera settings");
+    }
 
     Serial.println("Camera ready");
 
@@ -28,4 +39,5 @@ void setup()
 void loop()
 {
     handleWebRequests();
+    delay(2); // Allow background tasks
 }
