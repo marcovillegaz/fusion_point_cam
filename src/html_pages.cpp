@@ -13,50 +13,69 @@ const char MAIN_page[] PROGMEM = R"rawliteral(
       text-align: center;
       margin: 20px;
     }
-    #liveImage {
-      width: 100%;
-      max-width: 640px;
-      border: 1px solid #ddd;
+    #liveImg {
+      max-width: 100%;
+      height: auto;
       margin: 10px 0;
     }
     .btn {
       display: inline-block;
-      padding: 8px 16px;
-      background-color: #4CAF50;
+      padding: 10px 20px;
+      margin: 5px;
       color: white;
       text-decoration: none;
-      border-radius: 4px;
-      margin: 5px;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
     }
-    .btn:hover {
-      background-color: #45a049;
+    #ledBtn {
+      background-color: #4CAF50;
+    }
+    #ledBtn.off {
+      background-color: #f44336;
+    }
+    .settings-btn {
+      background-color: #2196F3;
     }
   </style>
 </head>
 <body>
-  <h2>Live Camera</h2>
-  <img id="liveImage" src="/cam.jpg">
+  <h2>ESP32-CAM Live Stream</h2>
+  <img id="liveImg" src="/cam.jpg">
   <div>
-    <a href="/settings" class="btn">Camera Settings</a>
-    <button onclick="refreshImage()" class="btn">Refresh Now</button>
+    <button id="ledBtn" class="btn" onclick="toggleLED()">LED OFF</button>
+    <a href="/settings" class="btn settings-btn">Settings</a>
+    <button onclick="refreshImage()" class="btn">Refresh</button>
   </div>
 
   <script>
-    // Auto-refresh image every 60 seconds (60000ms)
+    let ledState = false;
+    
+    // Toggle LED function
+    function toggleLED() {
+      ledState = !ledState;
+      const btn = document.getElementById('ledBtn');
+      btn.textContent = ledState ? 'LED ON' : 'LED OFF';
+      btn.classList.toggle('off', !ledState);
+      
+      fetch(`/led?state=${ledState ? 'on' : 'off'}`)
+        .then(response => response.text())
+        .then(data => console.log(data))
+        .catch(err => console.error('Error:', err));
+    }
+
+    // Auto-refresh image every 60 seconds
     setInterval(updateImage, 60000);
     
-    // Function to update the image
     function updateImage() {
-      var img = document.getElementById('liveImage');
-      img.src = '/cam.jpg?t=' + new Date().getTime();
+      document.getElementById('liveImg').src = '/cam.jpg?t=' + Date.now();
     }
     
-    // Manual refresh function
     function refreshImage() {
       updateImage();
     }
     
-    // Initial call to ensure first load
+    // Initial load
     window.onload = updateImage;
   </script>
 </body>
