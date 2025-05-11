@@ -6,72 +6,6 @@
 #include <FS.h>
 #include <LittleFS.h>
 
-bool applyCameraSettingsFromJSON(const char *path)
-{
-    // Check if the file system is mounted
-    if (!LittleFS.begin())
-    {
-        Serial.println("Failed to mount FS");
-        return false;
-    }
-
-    // Debug: List all files (optional)
-    File root = LittleFS.open("/");
-    File file_check = root.openNextFile();
-    while (file_check)
-    {
-        Serial.printf("Found: %s\n", file_check.name());
-        file_check = root.openNextFile();
-    }
-
-    // Debug: List files in root
-    File file = LittleFS.open(path, "r");
-    if (!file)
-    {
-        Serial.println("Failed to open settings file");
-        return false;
-    }
-
-    // Check if the file exists
-    if (!LittleFS.exists(path))
-    {
-        Serial.printf("File %s not found!\n", path);
-        return false;
-    }
-
-    JsonDocument doc;
-    DeserializationError error = deserializeJson(doc, file);
-    file.close();
-
-    if (error)
-    {
-        Serial.println("Failed to parse JSON");
-        return false;
-    }
-
-    sensor_t *s = esp_camera_sensor_get();
-    if (!s)
-        return false;
-
-    if (doc.containsKey("vflip"))
-        s->set_vflip(s, doc["vflip"]);
-    if (doc.containsKey("hmirror"))
-        s->set_hmirror(s, doc["hmirror"]);
-    if (doc.containsKey("brightness"))
-        s->set_brightness(s, doc["brightness"]);
-    if (doc.containsKey("contrast"))
-        s->set_contrast(s, doc["contrast"]);
-    if (doc.containsKey("saturation"))
-        s->set_saturation(s, doc["saturation"]);
-    if (doc.containsKey("framesize"))
-        s->set_framesize(s, (framesize_t)doc["framesize"].as<int>());
-    if (doc.containsKey("quality"))
-        s->set_quality(s, doc["quality"]);
-
-    Serial.println("Camera settings applied from JSON.");
-    return true;
-}
-
 bool initCamera()
 {
     // Set up camera configuration for OV2640
@@ -122,37 +56,111 @@ bool initCamera()
     return true;
 }
 
-// Handle the settings page
-void handleSettingsPage()
+bool applyCameraSettingsFromJSON(const char *path)
 {
-    server.send(200, "text/html", CAMERA_SETTINGS_page);
-}
-
-// Handle camera settings update
-void handleCameraSettingUpdate()
-{
-    if (!server.hasArg("plain"))
+    // Debug: Check if the file system is mounted
+    if (!LittleFS.begin())
     {
-        server.send(400, "text/plain", "Body not received");
-        return;
+        Serial.println("Failed to mount FS");
+        return false;
     }
 
-    String body = server.arg("plain");
-    JsonDocument doc;
-    deserializeJson(doc, body);
+    // Debug: List all files (optional)
+    File root = LittleFS.open("/");
+    File file_check = root.openNextFile();
+    while (file_check)
+    {
+        Serial.printf("Found: %s\n", file_check.name());
+        file_check = root.openNextFile();
+    }
 
+    // Debug: Try to open the settings file
+    File file = LittleFS.open(path, "r");
+    if (!file)
+    {
+        Serial.println("Failed to open settings file");
+        return false;
+    }
+
+    // Debug: Check if the file exists
+    if (!LittleFS.exists(path))
+    {
+        Serial.printf("File %s not found!\n", path);
+        return false;
+    }
+
+    // Read the file and parse JSON
+    JsonDocument doc;
+    DeserializationError error = deserializeJson(doc, file);
+    file.close();
+
+    // handle errors
+    if (error)
+    {
+        Serial.println("Failed to parse JSON");
+        return false;
+    }
+
+    // Apply settings to the camera
     sensor_t *s = esp_camera_sensor_get();
     if (!s)
+        return false;
+
+    if (doc.containsKey("vflip"))
+        s->set_vflip(s, doc["vflip"]);
+    if (doc.containsKey("hmirror"))
+        s->set_hmirror(s, doc["hmirror"]);
+    if (doc.containsKey("brightness"))
+        s->set_brightness(s, doc["brightness"]);
+    if (doc.containsKey("contrast"))
+        s->set_contrast(s, doc["contrast"]);
+    if (doc.containsKey("saturation"))
+        s->set_saturation(s, doc["saturation"]);
+    if (doc.containsKey("framesize"))
+        s->set_framesize(s, (framesize_t)doc["framesize"].as<int>());
+    if (doc.containsKey("quality"))
+        s->set_quality(s, doc["quality"]);
+
+    Serial.println("Camera settings applied from JSON.");
+    return true;
+}
+
+bool saveCameraSettingsToJSON(const char *path)
+{
+    if (!LittleFS.begin(true))
     {
-        server.send(500, "text/plain", "Sensor not found");
-        return;
+        Serial.println("Failed to mount LittleFS");
+        return false;
     }
 
-    s->set_vflip(s, doc["vflip"]);
-    s->set_hmirror(s, doc["hmirror"]);
-    s->set_brightness(s, doc["brightness"]);
-    s->set_contrast(s, doc["contrast"]);
-    s->set_saturation(s, doc["saturation"]);
+    // Get current camera settings
+    sensor_t *s = esp_camera_sensor_get();
+    if (!s)
+        return false;
 
-    server.send(200, "text/plain", "Settings updated");
+    // Create JSON document
+    JsonDocument doc;
+
+    // Add current settings to JSON
+    doc["vflip"] = s->status.vflip;
+    doc["hmirror"] = s->status.hmirror;
+    doc["brightness"] = s->status.brightness;
+    doc["contrast"] = s->status.contrast;
+    doc["saturation"] = s->status.saturation;
+    doc["framesize"] = s->status.framesize;
+    doc["quality"] = s->status.quality;
+
+    // Write to file
+    File file = LittleFS.open(path, "w");
+    if (!file)
+    {
+        Serial.println("Failed to open file for writing");
+        return false;
+    }
+
+    serializeJson(doc, file);
+    file.close();
+
+    Serial.println("Camera settings saved to JSON");
+    return true;
 }
