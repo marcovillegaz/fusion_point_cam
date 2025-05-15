@@ -2,7 +2,11 @@
 #include "wifi_setup.h"
 #include "camera_utils.h"
 #include "web_server.h"
-#include "temperature_sensor.h"
+
+#include "CameraManager.h"
+#include "TemperatureSensor.h"
+// #include "MicroSDManager.h"
+#include "WebServerManager.h"
 
 #include "secrets.h" // Include your WiFi credentials here
 
@@ -10,49 +14,65 @@
 #define TEMP_READ_INTERVAL 3000 // in milliseconds
 
 // IPAddress staticIP(192, 168, 1, 184); // Optional static IP
-IPAddress local_IP(0, 0, 0, 0); // forces DHCP instead of static
+// IPAddress local_IP(0, 0, 0, 0); // forces DHCP instead of static
 TemperatureSensor tempSensor(TEMP_SENSOR_PIN);
+CameraManager cam;          // CameraManager instance
+WebServerManager webServer; // WebServerManager instance
 
 void setup()
 {
     Serial.begin(115200); // Initialize serial communication
     delay(1000);
 
-    /* connectToWiFi(ssid, password, local_IP); // Connect to WiFi
-    // testWebServer();                    // Setup web server (shows a simple HTML page)
-
-    // Initialize camera
-    if (!initCamera())
+    // Camera initialization
+    if (!cam.init())
     {
         Serial.println("Camera initialization failed!");
         while (1)
             delay(100);
     }
 
-    // Load saved settings
-    if (!applyCameraSettingsFromJSON())
+    // Load setting from json to camera
+    /*     if (!applyCameraSettingsFromJSON())
+        {
+            Serial.println("Using default camera settings");
+        } */
+
+    if (!tempSensor.init())
     {
-        Serial.println("Using default camera settings");
+        Serial.println("Temperature sensor initialization failed!");
+        while (1)
+            delay(100);
     }
 
-    Serial.println("Camera ready");
+    /* connectToWiFi(ssid, password); // Connect to WiFi
 
     // Start web server
     setupWebServer(); */
-
-    // Temperature sensor initialization
-    Serial.println("Initializing temperature sensor...");
-    tempSensor.begin();
 }
 
 void loop()
 {
+    // TEMPERATURE READING
     float temperature = tempSensor.readTemperature();
+    float variance = tempSensor.getVariance();
+
     Serial.print("Temperature: ");
-    Serial.print(temperature);
-    Serial.println(" °C");
+    Serial.print(temperature, 4);
+    Serial.print(" °C | Variance: ");
+    Serial.print(variance, 5);
+
+    if (tempSensor.isSteadyState())
+    {
+        Serial.print(" | System has reached steady state.\n");
+    }
+    else
+    {
+        Serial.print(" | System is still stabilizing.\n");
+    }
 
     delay(TEMP_READ_INTERVAL);
+
     /* handleWebRequests();
     delay(2); // Allow background tasks */
 }
