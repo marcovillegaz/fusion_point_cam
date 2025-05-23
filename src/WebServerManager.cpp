@@ -1,29 +1,48 @@
 #include "WebServerManager.h"
+#include <WebServer.h>
 
-WebServerManager::WebServerManager(uint16_t port) : server(port), myCam(nullptr) {}
+WebServerManager::WebServerManager(uint16_t port)
+    : server(port),
+      myCam(nullptr),
+      tempSensor(nullptr)
+{
+}
 
 // Setup web server and its routes
-void WebServerManager::setup(CameraManager *myCam)
+void WebServerManager::init(CameraManager *myCam, TemperatureSensor *myTempSensor)
 {
-    this->myCam = myCam; // Store the pointer to the camera manager
-    
+    this->myCam = myCam;             // Store the pointer to the camera manager
+    this->tempSensor = myTempSensor; // Initialize temperature sensor
+
+    if (!LittleFS.begin(true))
+    {
+        Serial.println("LittleFS mount failed");
+        // Handle error accordingly, maybe return early
+    }
+
+    // --- Web server routes ---
     // Main page route
     server.on("/", HTTP_GET, [this]()
               { handleMainPage(); });
     // Image route
     server.on("/cam.jpg", HTTP_GET, [this]()
               { handleImageCapture(); });
-    // Camera settings routes
+
+    server.on("/temperature", HTTP_GET, [this]()
+              {
+                  float temp = tempSensor->readTemperature();      // or whatever method your class provides
+                  server.send(200, "text/plain", String(temp, 1)); // 1 decimal place
+              });
+
+    // Setting route
     server.on("/settings", HTTP_GET, [this]()
               { handleSettingsPage(); });
-    server.on("/update_setting", HTTP_POST, [this]()
-              { handleCameraSettingUpdate(); });
-    // LED control route
-    server.on("/led", HTTP_GET, [this]()
-              { handleLEDControl(); });
-    // LED status route
-    server.on("/led_status", HTTP_GET, [this]()
-              { handleLEDStatus(); });
+    /* // Set setting route
+    server.on("/set-config", HTTP_POST, [this]()
+              { handleCameraSettingUpdate(); }); */
+
+    // Include the logger fucntion here later.
+    server.on("/start-log", HTTP_GET, [this]() {});
 
     // Catch-all handler for undefined routes
     server.onNotFound([this]()
@@ -39,12 +58,22 @@ void WebServerManager::handleRequests()
     server.handleClient();
 }
 
-// Handlers
+// Main page handler
 void WebServerManager::handleMainPage()
 {
-    server.send(200, "text/html", MAIN_page);
+    File file = LittleFS.open("/main.html", "r");
+    if (!file)
+    {
+        server.send(500, "text/plain", "Failed to open main page");
+        return;
+    }
+
+    // Send the file content with the proper MIME type
+    server.streamFile(file, "text/html");
+    file.close();
 }
 
+// Image capture handler
 void WebServerManager::handleImageCapture()
 {
     camera_fb_t *fb = esp_camera_fb_get();
@@ -61,36 +90,56 @@ void WebServerManager::handleImageCapture()
     esp_camera_fb_return(fb);
 }
 
+// Camera settings page
 void WebServerManager::handleSettingsPage()
 {
     server.send(200, "text/html", CAMERA_SETTINGS_page);
 }
 
-/* void WebServerManager::handleCameraSettingUpdate()
+// Save camera settings
+bool WebServerManager::saveCameraSettings(const char *path)
 {
-} */
+    if (!LittleFS.begin(true))
+    {
+        Serial.println("Failed to mount LittleFS");
+        return false;
+    }
 
-void WebServerManager::handleLEDControl()
-{
-    if (server.hasArg("state"))
+    // Get current camera settings
+    sensor_t *s = esp_camera_sensor_get();
+    if (!s)
     {
-        String state = server.arg("state");
-        digitalWrite(4, state == "on" ? LOW : HIGH);
-        server.send(200, "text/plain", "LED " + state);
-        Serial.printf("LED set to: %s\n", state == "on" ? "ON" : "OFF");
+        Serial.println("Failed to get camera sensor");
+        return false;
     }
-    else
+
+    // Create JSON document
+    JsonDocument doc;
+
+    doc["vflip"] = s->status.vflip;
+    doc["hmirror"] = s->status.hmirror;
+    doc["brightness"] = s->status.brightness;
+    doc["contrast"] = s->status.contrast;
+    doc["saturation"] = s->status.saturation;
+    doc["framesize"] = s->status.framesize;
+    doc["quality"] = s->status.quality;
+
+    // Write to file
+    File file = LittleFS.open(path, "w");
+    if (!file)
     {
-        server.send(400, "text/plain", "Missing state parameter");
+        Serial.println("Failed to open file for writing");
+        return false;
     }
+
+    serializeJson(doc, file);
+    file.close();
+
+    Serial.println("Camera settings saved to JSON");
+    return true;
 }
 
-void WebServerManager::handleLEDStatus()
-{
-    bool ledState = digitalRead(4) == LOW; // LOW means ON
-    server.send(200, "text/plain", ledState ? "on" : "off");
-}
-
+// Handle not founds
 void WebServerManager::handleNotFound()
 {
     String message = "File Not Found\n\n";
