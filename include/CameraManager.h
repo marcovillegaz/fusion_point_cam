@@ -12,8 +12,9 @@ public:
 
     bool init(); // Unit camera, alway first
     bool loadSettings(const char *path = "/camera_settings.json");
-    bool saveSettings(const char *path = "/camera_settings.json");
-   
-    sensor_t *sensor;
+    camera_fb_t *capturePhoto(); // Capture a photo and return the frame buffer
+    void deinit();               // Deinitialize the camera
 
+    sensor_t *sensor;
+    camera_fb_t *lastFrameBuffer;
 };
