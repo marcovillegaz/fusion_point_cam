@@ -1,15 +1,14 @@
-// src/CameraManager.cpp
-#include "CameraManager.h"
+// src/camera_utils.cpp
+#include "camera_utils.h"
+#include "html_pages.h"
 #include <ArduinoJson.h>
+
+#include <FS.h>
 #include <LittleFS.h>
 
-// Constructor definition using
-CameraManager::CameraManager() : sensor(nullptr), lastFrameBuffer(nullptr) {}
-
-// Initialize the camera manager
-bool CameraManager::init()
+bool initCamera()
 {
-
+    // Set up camera configuration for OV2640
     camera_config_t config;
     config.ledc_channel = LEDC_CHANNEL_0;
     config.ledc_timer = LEDC_TIMER_0;
@@ -32,7 +31,7 @@ bool CameraManager::init()
     config.xclk_freq_hz = 20000000;
     config.pixel_format = PIXFORMAT_JPEG;
 
-    // Configure frame size and quality based on PSRAM availability
+    // Set the frame size and quality based on PSRAM availability
     if (psramFound())
     {
         config.frame_size = FRAMESIZE_VGA;
@@ -46,7 +45,7 @@ bool CameraManager::init()
         config.fb_count = 1;
     }
 
-    // Initialize the camera with the config settings
+    // Initialize the camera
     esp_err_t err = esp_camera_init(&config);
     if (err != ESP_OK)
     {
@@ -54,37 +53,10 @@ bool CameraManager::init()
         return false;
     }
 
-    // SOMEHTING HERE
-    pinMode(4, INPUT); // Prevent flash LED toggling, allow sensor to use it safely
-
-    // Initialize the camera sensor
-    sensor = esp_camera_sensor_get();
-    if (!sensor)
-    {
-        Serial.println("Failed to get camera sensor");
-        return false; // If sensor isn't available, initialization fails
-    }
-
-    Serial.println("Camera initialized successfully");
     return true;
 }
 
-// Deinitialize the camera
-void CameraManager::deinit()
-{
-    if (lastFrameBuffer)
-    {
-        esp_camera_fb_return(lastFrameBuffer);
-        lastFrameBuffer = nullptr;
-    }
-    esp_camera_deinit();
-    sensor = nullptr;
-
-    Serial.println("Camera deinitialized and frame buffer returned.");
-}
-
-// Apply setting from a JSON file
-bool CameraManager::loadSettings(const char *path)
+bool applyCameraSettingsFromJSON(const char *path)
 {
     // Debug: Check if the file system is mounted
     if (!LittleFS.begin())
@@ -98,7 +70,7 @@ bool CameraManager::loadSettings(const char *path)
     File file_check = root.openNextFile();
     while (file_check)
     {
-        Serial.printf("FS Found: %s\n", file_check.name());
+        Serial.printf("Found: %s\n", file_check.name());
         file_check = root.openNextFile();
     }
 
@@ -130,7 +102,9 @@ bool CameraManager::loadSettings(const char *path)
     }
 
     // Apply settings to the camera
-    sensor_t *s = esp_camera_sensor_get(); // This fucntion alwys return the adress of camera sensor
+    sensor_t *s = esp_camera_sensor_get();
+    if (!s)
+        return false;
 
     if (doc.containsKey("vflip"))
         s->set_vflip(s, doc["vflip"]);
@@ -151,25 +125,42 @@ bool CameraManager::loadSettings(const char *path)
     return true;
 }
 
-// Capture a photo and return the frame buffer
-camera_fb_t *CameraManager::capturePhoto()
+bool saveCameraSettingsToJSON(const char *path)
 {
-    if (!init()) // Initialize the camera if not already done
+    if (!LittleFS.begin(true))
     {
-        Serial.println("Camera initialization failed!");
-        return nullptr;
+        Serial.println("Failed to mount LittleFS");
+        return false;
     }
 
-    Serial.println("Capturing photo...");
-    camera_fb_t *lastFrameBuffer = esp_camera_fb_get();
-    if (!lastFrameBuffer)
+    // Get current camera settings
+    sensor_t *s = esp_camera_sensor_get();
+    if (!s)
+        return false;
+
+    // Create JSON document
+    JsonDocument doc;
+
+    // Add current settings to JSON
+    doc["vflip"] = s->status.vflip;
+    doc["hmirror"] = s->status.hmirror;
+    doc["brightness"] = s->status.brightness;
+    doc["contrast"] = s->status.contrast;
+    doc["saturation"] = s->status.saturation;
+    doc["framesize"] = s->status.framesize;
+    doc["quality"] = s->status.quality;
+
+    // Write to file
+    File file = LittleFS.open(path, "w");
+    if (!file)
     {
-        Serial.println("Failed to capture image");
-        return nullptr;
+        Serial.println("Failed to open file for writing");
+        return false;
     }
 
-    Serial.printf("Captured image: %d bytes\n", lastFrameBuffer->len);
-    // deinit(); // Deinitialize the camera after capturing
+    serializeJson(doc, file);
+    file.close();
 
-    return lastFrameBuffer;
+    Serial.println("Camera settings saved to JSON");
+    return true;
 }

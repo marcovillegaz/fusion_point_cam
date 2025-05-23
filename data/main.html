@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>ESP32 Monitor</title>
+    <style>
+        body {
+            font-family: monospace, monospace;
+            text-align: center;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        img {
+            width: 100%;
+            max-width: 480px;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+        .buttons {
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            background-color: #007acc;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #005fa3;
+        }
+
+        .temperature {
+            font-size: 24px;
+            margin-top: 20px;
+            color: #444;
+        }
+
+        /* Terminal style output */
+        #logWindow {
+            margin: 20px auto;
+            padding: 10px;
+            background-color: #767676;
+            color: rgb(0, 0, 0);
+            font-family: monospace;
+            font-size: 14px;
+            height: 200px;
+            max-width: 480px;
+            border-radius: 5px;
+            overflow-y: auto;
+            text-align: left;
+            white-space: pre-wrap;
+            display: true;
+            /* hidden until logging starts */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>ESP32 Monitor</h1>
+
+        <img id="cam" src="/cam.jpg" alt="Camera Feed" />
+
+        <div class="buttons">
+            <button onclick="location.href='/settings'">⚙️ Settings</button>
+            <button id="logBtn">📈 Start Logging</button>
+        </div>
+        <!-- Displays the temperature -->
+        <div class="temperature">
+            Temperature: <span id="tempValue">--</span> °C
+        </div>
+
+        <!-- Terminal-like log window -->
+        <div id="logWindow"></div>
+    </div>
+
+    <script>
+        // Auto-refresh camera every 500ms
+        setInterval(() => {
+            document.getElementById("cam").src = `/cam.jpg?_ts=${Date.now()}`;
+        }, 2000);
+
+        // Update the current temperature every 2 seconds
+        setInterval(() => {
+            fetch("/temperature")
+                .then(res => res.text())
+                .then(data => {
+                    document.getElementById("tempValue").textContent = data;
+                });
+        }, 2000);
+
+        // Variables for logging
+        let logging = false;
+        let logInterval;
+
+        document.getElementById("logBtn").addEventListener("click", () => {
+            if (!logging) {
+                // Start logging
+                fetch("/start-log")
+                    .then(res => res.text())
+                    .then(msg => {
+                        alert(msg);  // optional confirmation popup
+                        logging = true;
+                        document.getElementById("logWindow").style.display = "block";
+                        document.getElementById("logWindow").textContent = ""; // clear old logs
+
+                        // Start periodic fetch to update log window
+                        logInterval = setInterval(() => {
+                            fetch("/temperature")
+                                .then(res => res.text())
+                                .then(data => {
+                                    // Append new data line (raw text, format handled server-side)
+                                    const logWin = document.getElementById("logWindow");
+                                    logWin.textContent += data + "\n";
+                                    logWin.scrollTop = logWin.scrollHeight; // scroll to bottom
+                                });
+                        }, 2000);
+                    });
+            } else {
+                // Optionally: stop logging if you want
+                clearInterval(logInterval);
+                logging = false;
+                document.getElementById("logWindow").style.display = "none";
+                alert("Logging stopped");
+            }
+        });
+    </script>
+</body>
+
+</html>

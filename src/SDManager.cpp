@@ -24,11 +24,11 @@ void SDManager::deinit()
     SD_MMC.end();
 }
 
-// Create (or overwrite) a new log file
+// Create (or overwrite) a new log file (Setup only)
 bool SDManager::createLogFile(const String &filename)
 {
     // For debugging
-    Serial.println("Creating log file: " + filename);
+    Serial.printf("Creating log file: %s\n", filename);
 
     // Initialize SD card
     if (!init())
@@ -36,16 +36,18 @@ bool SDManager::createLogFile(const String &filename)
 
     // Open the file in write mode to overwrite or create it
     File file = SD_MMC.open(filename, FILE_WRITE);
-    if (!file)
+    if (!file) // if file opening failed then deinialize SD
     {
+        Serial.println("Failed to open file for writing");
         deinit();
         return false;
     }
 
     // Optionally write a header line
-    file.println("Timestamp, Temperature (°C), Variance");
-
+    file.println("n, time (ms), temperature (°C)");
     file.close(); // Close file
+
+    deinit(); // Deinitialize SD card
 
     return true;
 }
@@ -93,6 +95,8 @@ bool SDManager::saveImage(const uint8_t *data, size_t length, const String &file
     file.close();             // Close the file
     deinit();                 // Deinitialize the SD card
 
+    Serial.println("Image saved to: " + filename); // For debugging
+
     return true;
 }
 
@@ -126,12 +130,12 @@ void SDManager::listFiles()
     {
         if (file.isDirectory())
         {
-            Serial.print("DIR : ");
+            Serial.print("\tDIR : ");
             Serial.println(file.name());
         }
         else
         {
-            Serial.print("FILE: ");
+            Serial.print("\tFILE: ");
             Serial.print(file.name());
             Serial.print("  SIZE: ");
             Serial.println(file.size());
@@ -140,5 +144,5 @@ void SDManager::listFiles()
     }
 
     root.close();
-    deinit();
+    deinit(); // Deinitialize the SD card
 }
