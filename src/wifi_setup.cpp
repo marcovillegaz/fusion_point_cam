@@ -1,3 +1,7 @@
+// WiFi Setup for ESP32
+// This code connects the ESP32 to a WiFi network and configures 
+// the local IP address if provided.
+
 #include "wifi_setup.h"
 
 void connectToWiFi(const char* ssid, const char* password, IPAddress local_IP) {
