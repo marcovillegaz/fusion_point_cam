@@ -3,14 +3,15 @@
 
 #include <Arduino.h>
 
-class TemperatureLogger {
+class TemperatureLogger
+{
 private:
     String logBuffer;
 
 public:
     TemperatureLogger();
-    
-    void addReading(float temperature);
+
+    void addReading(float temperature, int readCount);
     String getLog();
     void clear();
 };
