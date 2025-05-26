@@ -55,7 +55,8 @@ bool CameraManager::init()
     }
 
     // SOMEHTING HERE
-    pinMode(4, INPUT); // Prevent flash LED toggling, allow sensor to use it safely
+    pinMode(4, OUTPUT); // Prevent flash LED toggling, allow sensor to use it safely
+    digitalWrite(4, LOW);
 
     // Initialize the camera sensor
     sensor = esp_camera_sensor_get();
