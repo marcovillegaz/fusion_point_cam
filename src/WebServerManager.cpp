@@ -3,16 +3,14 @@
 
 WebServerManager::WebServerManager(uint16_t port)
     : server(port),
-      myCam(nullptr),
-      tempSensor(nullptr)
+      myCam(nullptr)
 {
 }
 
 // Setup web server and its routes
-void WebServerManager::init(CameraManager *myCam, TemperatureSensor *myTempSensor)
+void WebServerManager::init(CameraManager *myCam)
 {
     this->myCam = myCam;             // Store the pointer to the camera manager
-    this->tempSensor = myTempSensor; // Initialize temperature sensor
 
     if (!LittleFS.begin(true))
     {
@@ -27,20 +25,12 @@ void WebServerManager::init(CameraManager *myCam, TemperatureSensor *myTempSenso
     // Image route
     server.on("/cam.jpg", HTTP_GET, [this]()
               { handleImageCapture(); });
-
-    server.on("/temperature", HTTP_GET, [this]()
-              {
-                  float temp = tempSensor->readTemperature();      // or whatever method your class provides
-                  server.send(200, "text/plain", String(temp, 1)); // 1 decimal place
-              });
-
     // Setting route
     server.on("/settings", HTTP_GET, [this]()
               { handleSettingsPage(); });
-    /* // Set setting route
+    // Set setting route
     server.on("/set-config", HTTP_POST, [this]()
-              { handleCameraSettingUpdate(); }); */
-
+              { handleCameraSettingUpdate(); });
     // Include the logger fucntion here later.
     server.on("/start-log", HTTP_GET, [this]() {});
 
@@ -94,6 +84,39 @@ void WebServerManager::handleImageCapture()
 void WebServerManager::handleSettingsPage()
 {
     server.send(200, "text/html", CAMERA_SETTINGS_page);
+}
+
+// Handle camera setting updates
+void WebServerManager::handleCameraSettingUpdate()
+{
+    if (server.hasArg("plain") == false) {
+        server.send(400, "text/plain", "Body not received");
+        return;
+    }
+
+    JsonDocument doc;
+    DeserializationError error = deserializeJson(doc, server.arg("plain"));
+
+    if (error) {
+        server.send(400, "text/plain", "JSON parse failed");
+        return;
+    }
+
+    // Save new settings to file
+    File file = LittleFS.open("/cam_config.json", "w");
+    if (!file) {
+        server.send(500, "text/plain", "Failed to open config file");
+        return;
+    }
+
+    serializeJson(doc, file);
+    file.close();
+
+    if (myCam->loadSettings("/cam_config.json")) {
+        server.send(200, "text/plain", "Settings updated successfully");
+    } else {
+        server.send(500, "text/plain", "Failed to apply settings");
+    }
 }
 
 // Save camera settings

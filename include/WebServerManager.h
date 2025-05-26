@@ -15,18 +15,17 @@ class WebServerManager
 public:
     WebServerManager(uint16_t port = 80);
 
-    void init(CameraManager *myCam , TemperatureSensor *myTempSensor); // accepts a pointer to the camera manager
+    void init(CameraManager *myCam); // accepts a pointer to the camera manager
     void handleRequests();
 
 private:
     WebServer server;
     CameraManager *myCam;
-    TemperatureSensor *tempSensor;
 
     void handleMainPage();
     void handleImageCapture();
-    bool saveCameraSettings(const char *path = "/camera_settings.json");
+    bool saveCameraSettings(const char *path = "/cam_settings.json");
     void handleSettingsPage();
-    // void handleCameraSettingUpdate();
+    void handleCameraSettingUpdate();
     void handleNotFound();
 };
