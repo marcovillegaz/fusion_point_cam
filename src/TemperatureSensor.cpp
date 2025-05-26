@@ -71,7 +71,7 @@ bool TemperatureSensor::isSteadyState()
     if (!bufferFilled)
         return false;
 
-    auto [mean, variance] = getMeanAndVariance();
+    auto [mean, variance] = getMeanAndVariance();     // FIX THIS IN FUTURE
 
     // Here we can add more complex logic to determine if the system is in a steady state
     return variance < VARIANCE_THRESHOLD;

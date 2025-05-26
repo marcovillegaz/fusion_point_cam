@@ -11,7 +11,7 @@ public:
     CameraManager();
 
     bool init(); // Unit camera, alway first
-    bool loadSettings(const char *path = "/camera_settings.json");
+    bool loadSettings(const char *path = "/cam_config.json");
     camera_fb_t *capturePhoto(); // Capture a photo and return the frame buffer
     void deinit();               // Deinitialize the camera
 
