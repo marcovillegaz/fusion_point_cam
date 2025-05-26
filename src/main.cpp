@@ -21,7 +21,7 @@ TemperatureSensor tempSensor(TEMP_SENSOR_PIN);
 SDManager sdManager(TEMP_SENSOR_PIN);
 TemperatureLogger tempLogger;
 CameraManager camera;
-// WebServerManager webServer;                    // WebServerManager instance
+WebServerManager webServer; // WebServerManager instance
 
 // --- Constants ---
 const unsigned long READ_INTERVAL_MS = 2000; // 2 seconds between readings
@@ -36,6 +36,8 @@ void setup()
 {
     // Initialize serial communication
     Serial.begin(115200);
+
+    /* // Temeprature log and camera initialization
     Serial.println("========== SYSTEM LOG START ==========\n");
 
     // --- Set Experiment name ---
@@ -79,7 +81,7 @@ void setup()
         Serial.println("Temperature sensor initialization failed!");
         while (1)
             delay(100);
-    }
+    }*/
 
     // --- THIS IS OLD CODE ---
     /* // Prevent GPIO4 (flash LED) from interfering
@@ -91,17 +93,24 @@ void setup()
         Serial.println("camera_settting.json couldnt load");
     } */
 
-    // --- web testing ---
-    /* // Connect to WiFi
-    connectToWiFi(ssid, password); // Connect to WiFi
+    // --- Camera test --
+    if (!camera.init())
+    {
+        Serial.println("Camera failed to initialize");
+        return;
+    }
 
+    camera.loadSettings("/cam_config.json"); // Optional: load last settings
+
+    // Connect to WiFi
+    connectToWiFi(ssid, password); // Connect to WiFi
     // Initialize web server and pass reference to camera and tempSensor
-    webServer.init(&camera, &tempSensor); */
+    webServer.init(&camera);
 }
 
 void loop()
 {
-    // --- Logic handling GPIO4 for multiples sensors ---
+    /* // --- Logic handling GPIO4 for multiples sensors ---
     unsigned long currentTime = millis();
 
     if (currentTime - lastReadTime >= READ_INTERVAL_MS)
@@ -131,7 +140,7 @@ void loop()
             if (fb)
             {
                 // Filename of the capture
-                String filename = "/" + experimentName + "_" + String(readCount) + ".jpg";
+                String filename = "/" + String(readCount) + "_" + experimentName + "_" + lastReadTime  + ".jpg";
                 // Save image to SD
                 sdManager.saveImage(fb->buf, fb->len, filename);
                 // Deinit camera and return frame buffer
@@ -141,7 +150,11 @@ void loop()
             tempSensor.init(); // Reinitialize sensor
         }
     }
-    delay(TEMP_READ_INTERVAL);
+    delay(TEMP_READ_INTERVAL); */
+
+    // Web server handling
+    // Handle incoming web requests
+    webServer.handleRequests();
 }
 
 // --- Old code ---
@@ -162,7 +175,3 @@ else
 {
     Serial.print(" | System is still stabilizing.\n");
 } */
-
-// Web server handling
-/* // Handle incoming web requests
-    webServer.handleRequests(); */
