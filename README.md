@@ -1,3 +1,13 @@
+# Frameware
+
+In serial monitor you can activate two mods: 
+- Webserver to adjust the position of the camera and adjust the setting in real time, it also show the real temeprature *incorporate*
+- Experiment mode to log the temperature and take picture and save it in SD card for further processing. 
+
+
+# Python
+
+
 # Classes
 ## TemperatureSensor 
 This class handle all the action related to the temperature measurment and calculations. 
