@@ -1,17 +1,16 @@
+import os
 import argparse
 from src.steps import to_grayscale, apply_blur, threshold_image
 from src.executor import run_pipeline
 from src.utils import load_images_from_folder, save_images
-import os
 
-parser = argparse.ArgumentParser(description="Run image pipeline on folder")
-parser.add_argument("input_folder", help="Input folder with images")
-parser.add_argument("output_folder", help="Output folder to save results")
-args = parser.parse_args()
+experiment = r"test2"
+input_folder = os.path.join("data", "images", experiment)
 
-image_paths = load_images_from_folder(args.input_folder)
+image_paths = load_images_from_folder(input_folder)
+print(image_paths)
 
-# Define your pipeline steps here
+""" # Define your pipeline steps here
 steps = {
     "gray": to_grayscale,
     "blurred": apply_blur,
@@ -26,4 +25,4 @@ for img_path in image_paths:
         continue
     results = run_pipeline(img, steps)
     save_images(args.output_folder, base_name, results)
-    print(f"Processed {base_name}")
+    print(f"Processed {base_name}") """
