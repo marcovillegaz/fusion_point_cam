@@ -1,3 +1,21 @@
-.venv
+# Virtual environment and environment variables
+.venv/
+.env
+
+# VS Code settings
+.vscode/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Image and text outputs (adjust as needed)
 *.jpg
+*.jpeg
+*.png
 *.txt
+
+# Logs or temp files (optional)
+*.log
+*.tmp
