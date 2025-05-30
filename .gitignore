@@ -2,3 +2,9 @@
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 .vscode/ipch
+
+.vscode
+
+**/.vscode/ 
+firmware/.vscode/launch.json
+firmware/.vscode/c_cpp_properties.json
