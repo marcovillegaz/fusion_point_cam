@@ -1,28 +1,34 @@
 import os
-import argparse
-from src.steps import to_grayscale, apply_blur, threshold_image
-from src.executor import run_pipeline
-from src.utils import load_images_from_folder, save_images
 
-experiment = r"test2"
-input_folder = os.path.join("data", "images", experiment)
+from src.steps import *
+from src.utils import process_image_batch
+from src.postprocess import *
 
-image_paths = load_images_from_folder(input_folder)
-print(image_paths)
+experiment = r"test4"
+input_folder = os.path.join("data", "raw", experiment)
+output_folder = os.path.join("data", "processed", experiment)
 
-""" # Define your pipeline steps here
-steps = {
-    "gray": to_grayscale,
-    "blurred": apply_blur,
-    "thresholded": threshold_image,
-}
+# process batch of images
+process_image_batch(
+    input_folder,
+    output_folder,
+    steps={
+        "cropped": lambda img: crop_image(img, x=200, y=0, width=400, height=600),
+        "greyscale": to_grayscale,
+        "normalize": lambda img: normalize_clahe(img),
+        "blurred": apply_blur,
+        "histogram": lambda img: extract_white_histogram(img, white_threshold=0),
+        # "thresholded": lambda img: threshold_image(img, thresh=150),
+    },
+    prefilter_fn=lambda img: filter_bright_image(img, brightness_threshold=70),
+    postprocess_fn=lambda img: mean_median_brightness(
+        img, save_path=os.path.join(output_folder, "metrics", "mean_median.csv")
+    ),
+    save_intermediate=False,
+)
 
-for img_path in image_paths:
-    base_name = os.path.splitext(os.path.basename(img_path))[0]
-    img = cv2.imread(img_path)
-    if img is None:
-        print(f"Warning: could not load image {img_path}")
-        continue
-    results = run_pipeline(img, steps)
-    save_images(args.output_folder, base_name, results)
-    print(f"Processed {base_name}") """
+# extract white pixels as number
+
+# create dataframe using log
+
+# create plot of results T,W vs time
