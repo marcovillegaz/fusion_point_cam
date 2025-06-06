@@ -2,16 +2,23 @@ import os
 import cv2
 from collections import OrderedDict
 
+from src.utils import save_images
+from src.utils import get_image_paths
+
 
 class ImagePipeline:
     def __init__(
         self,
+        experiment_name,
         steps,
         prefilter_fn=None,
         postprocess_fn=None,
         save_intermediate=True,
         valid_exts=(".jpg", ".jpeg", ".png", ".bmp"),
     ):
+
+        # defining attributes
+        self.EXPERIMENT_NAME = experiment_name
         self.steps = OrderedDict(steps)
         self.prefilter_fn = prefilter_fn
         self.postprocess_fn = postprocess_fn
@@ -19,55 +26,65 @@ class ImagePipeline:
         self.valid_exts = valid_exts
         self.metrics = []
 
-    def load_images(self, folder):
-        return [
-            os.path.join(folder, f)
-            for f in os.listdir(folder)
-            if f.lower().endswith(self.valid_exts)
-        ]
+    # --- METHODS ---
 
+    # RUN THE PAIPLE TO BATCH OF IMAGES
     def run(self, input_folder, output_folder):
-        os.makedirs(output_folder, exist_ok=True)
-        image_paths = self.load_images(input_folder)
 
+        # Create output folders
+        os.makedirs(output_folder, exist_ok=True)
+
+        # Get images path
+        image_paths = get_image_paths(input_folder, self.valid_exts)
+
+        # apply pipeline for each image in path
         for path in image_paths:
+            # Get base name
             base_name = os.path.splitext(os.path.basename(path))[0]
             print(f"Processing {base_name}")
 
+            # open image
             img = cv2.imread(path)
             if img is None:
                 print(f"Warning: could not load image {path}")
                 continue
 
+            # Apply prefilter pipeline
             if self.prefilter_fn:
                 img = self.prefilter_fn(img)
                 if img is None:
                     print("X Image filtered out. Skipping.")
                     continue
 
-            results = self.apply_steps(img)
+            # Apply image processing pipeline
+            results = self.execute_steps(img)
             if not results:
                 continue
 
+            # Save image processign results
             self.save(output_folder, base_name, results)
 
+            # Create list of tuples for postprocessing pipeline
             if self.postprocess_fn:
                 final_image = list(results.values())[-1]
                 self.metrics.append((final_image, base_name))
 
+        # Apply post processing to get metric from all the batch
         if self.postprocess_fn:
             return self.postprocess_fn(self.metrics)
 
-    def apply_steps(self, img):
+    # APPLY A PIPE LINE TO AND IMAGE
+    def execute_steps(self, img):
         results = OrderedDict()
         current = img
-        for name, fn in self.steps.items():
-            current = fn(current)
+        for name, step in self.steps.items():
+            current = step(current)
             if current is None:
                 return None  # abort this image
             results[name] = current
         return results
 
+    # save image processing results.
     def save(self, output_folder, base_name, results):
         if self.save_intermediate:
             save_images(output_folder, base_name, results)
