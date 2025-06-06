@@ -2,8 +2,10 @@ import os
 import cv2
 from collections import OrderedDict
 
-from src.utils import save_images
-from src.utils import get_image_paths
+from src.utils.io import save_images
+from src.utils.io import get_image_paths
+
+from src.utils.pipeline import execute_pipeline_steps
 
 
 class ImagePipeline:
@@ -57,7 +59,7 @@ class ImagePipeline:
                     continue
 
             # Apply image processing pipeline
-            results = self.execute_steps(img)
+            results = execute_pipeline_steps(img, self.steps)
             if not results:
                 continue
 
@@ -69,20 +71,9 @@ class ImagePipeline:
                 final_image = list(results.values())[-1]
                 self.metrics.append((final_image, base_name))
 
-        # Apply post processing to get metric from all the batch
+        # Apply post processing to get metric from all the batch (all at once)
         if self.postprocess_fn:
-            return self.postprocess_fn(self.metrics)
-
-    # APPLY A PIPE LINE TO AND IMAGE
-    def execute_steps(self, img):
-        results = OrderedDict()
-        current = img
-        for name, step in self.steps.items():
-            current = step(current)
-            if current is None:
-                return None  # abort this image
-            results[name] = current
-        return results
+            return self.postprocess_fn(self.metrics, output_folder)
 
     # save image processing results.
     def save(self, output_folder, base_name, results):
