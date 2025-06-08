@@ -13,7 +13,7 @@ experiment = "test4"
 input_folder = os.path.join("data", "raw", "images", experiment)
 output_folder = os.path.join("data", "processed", experiment)
 
-# Define your filter for images
+# Define your filter for images (enhence for more filters)
 prefilter = lambda img: filter_bright_image(img, brightness_threshold=70)
 
 # Define your image processing pipeline (OrderedDtct)
@@ -28,6 +28,8 @@ steps = [
 postprocess = [
     brightness_stats,
     edge_density,
+    sharpness_laplacian,
+    contrast_rms,
 ]
 
 # Instantiate and run pipeline
