@@ -27,7 +27,7 @@ def mean_median_brightness(images, output_folder):
             raise ValueError("Image must be grayscale for brightness computation")
 
         index = int(filename.split("_")[0])  # Extract index from filename
-        print(index)
+
         mean_brightness = np.mean(img)
         median_brightness = np.median(img)
         data.append((index, mean_brightness, median_brightness))
@@ -44,6 +44,34 @@ def mean_median_brightness(images, output_folder):
     save_path = os.path.join(output_folder, "brightness_metrics.csv")
     df.to_csv(save_path, index=False)
     print(f"Saved brightness metrics to {save_path}")
+
+
+def compute_edge_density(images, output_folder):
+    """
+    Compute mean and median brightness for each image.
+
+    Args:
+        images (list of tuples): Each tuple contains (image: np.ndarray, filename: str)
+        output_folder (str): output folder where the metric will be saved.
+
+    Returns:
+        pd.DataFrame: Columns = ["index", "mean_brightness", "median_brightness"]
+    """
+    rows = []
+    for img, filename in images:
+        if len(img.shape) != 2:
+            raise ValueError("Image must be grayscale for brightness computation")
+
+        # Extract index from filename
+        index = int(filename.split("_")[0])
+
+        edges = cv2.Canny(img, 100, 200)
+        density = edges.sum() / edges.size
+        rows.append({"name": filename, "edge_density": density})
+
+    df = pd.DataFrame(rows)
+    df.to_csv(os.path.join(output_folder, "edge_density.csv"), index=False)
+    return df
 
 
 def extract_white_histogram(image_path, white_threshold=200):
