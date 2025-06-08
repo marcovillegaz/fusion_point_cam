@@ -1,5 +1,6 @@
 import os
 import cv2
+import pandas as pd
 
 
 def get_image_paths(folder, valid_exts=(".jpg", ".jpeg", ".png", ".bmp")):
@@ -37,6 +38,14 @@ def save_images(output_folder, base_name, images_dict):
         output_path = os.path.join(subfolder_path, f"{base_name}_{name}{ext}")
         # Write the image to the output path
         cv2.imwrite(output_path, img)
+
+
+def save_metric(df: pd.DataFrame, output_folder: str, metric_name: str):
+    """Save a metric DataFrame to CSV."""
+    os.makedirs(output_folder, exist_ok=True)
+    save_path = os.path.join(output_folder, f"{metric_name}.csv")
+    df.to_csv(save_path, index=False)
+    print(f"[POST PROCESS] Saved {metric_name} to {save_path}")
 
 
 def create_gif_from_folder(input_folder, output_path, duration=0.3):
