@@ -4,8 +4,10 @@ from collections import OrderedDict
 
 from src.utils.io import save_images
 from src.utils.io import get_image_paths
+from src.utils.io import save_metric
 
-from src.utils.pipeline import execute_pipeline_steps
+from src.utils.executor import execute_pipeline_steps
+from src.utils.metric_batch import compute_metric_batch
 
 
 class ImagePipeline:
@@ -73,9 +75,18 @@ class ImagePipeline:
 
         # Apply post processing to get metric from all the batch (all at once)
         if self.postprocess_fn:
-            return self.postprocess_fn(self.metrics, output_folder)
+            # postprocess_fn is list of metric functions
+            if isinstance(self.postprocess_fn, list):
+                for metric_fn in self.postprocess_fn:
+                    # apply metric_fn on full batch (self.metrics)
+                    df = compute_metric_batch(self.metrics, metric_fn)
+                    # save each metric CSV file with metric function's __name__ or a custom name
+                    save_metric(df, output_folder, metric_fn.__name__)
+            else:
+                # postprocess_fn is a single function as before
+                return self.postprocess_fn(self.metrics, output_folder)
 
-    # save image processing results.
+    # save image processing results. (put in io.py)
     def save(self, output_folder, base_name, results):
         if self.save_intermediate:
             save_images(output_folder, base_name, results)
