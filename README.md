@@ -1,12 +1,11 @@
-# Frameware
+This project consist on a DIY device to measure the melting point of substances 
+employing ESP-32-CAM and image processing. 
 
-In serial monitor you can activate two mods: 
-- Webserver to adjust the position of the camera and adjust the setting in real time, it also show the real temeprature *incorporate*
-- Experiment mode to log the temperature and take picture and save it in SD card for further processing. 
-
+# Firmware
+Contains the firmware of the device
 
 # Python
-
+Contains the scripts used for processing the iamge an obtain quantity data that represents the melting point. 
 
 # Classes
 ## TemperatureSensor 
