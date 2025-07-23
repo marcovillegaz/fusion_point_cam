@@ -108,7 +108,7 @@ void loop()
         // --- Temperature Reading Phase ---
         readCount++;                               // Increment read count
         float temp = tempSensor.readTemperature(); // Read temperature
-        tempLogger.addReading(temp, readCount);    // Add reading to l  ogger
+        tempLogger.addReading(temp, readCount);    // Add reading to logger
         tempSensor.deinit();                       // Release GPIO4
 
         Serial.printf("#%d, %.2f s, %.2f°C\n",
