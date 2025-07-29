@@ -13,8 +13,9 @@ TemperatureSensor::TemperatureSensor(uint8_t pin)
 bool TemperatureSensor::init()
 {
     pinMode(sensorPin, INPUT); // <-- Explicitly set pin as INPUT
-    sensors.begin();
+    delay(100);
 
+    sensors.begin();
     if (sensors.getDeviceCount() == 0)
     {
         Serial.println("No DS18B20 sensor found!");
@@ -40,7 +41,8 @@ void TemperatureSensor::deinit()
     // There is no direct deinit for DallasTemperature
     // But to "release" the pin and free it for other uses:
     pinMode(sensorPin, INPUT); // Set pin as input to release control
-    Serial.println("TemperatureSensor deinitialized and pin released.");
+
+    // Serial.println("TemperatureSensor deinitialized and pin released.");
 }
 
 // Read temperature from the sensor
@@ -71,7 +73,7 @@ bool TemperatureSensor::isSteadyState()
     if (!bufferFilled)
         return false;
 
-    auto [mean, variance] = getMeanAndVariance();     // FIX THIS IN FUTURE
+    auto [mean, variance] = getMeanAndVariance(); // FIX THIS IN FUTURE
 
     // Here we can add more complex logic to determine if the system is in a steady state
     return variance < VARIANCE_THRESHOLD;
