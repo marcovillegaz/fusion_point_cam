@@ -5,6 +5,8 @@
 
 .vscode
 
+**.pptx
+
 **/.vscode/ 
 firmware/.vscode/launch.json
 firmware/.vscode/c_cpp_properties.json
