@@ -9,11 +9,15 @@ SDManager::SDManager(uint8_t ledPin)
 // Constructor definition
 bool SDManager::init()
 {
-    SD_MMC.begin("/sdcard", true);
+    // Release any other resources using GPIO4 first
+    pinMode(4, INPUT);
+    delay(100);
+
+    SD_MMC.begin("/sdcard", true); // Initialize SD card with default settings
 
     // Specify that LED pin
-    pinMode(LED_PIN, OUTPUT);
-    digitalWrite(LED_PIN, LOW);
+    /* pinMode(LED_PIN, OUTPUT);
+    digitalWrite(LED_PIN, LOW); */
 
     return true;
 }
@@ -55,11 +59,12 @@ bool SDManager::createLogFile(const String &filename)
 // Save temperature log into SD.
 bool SDManager::saveLog(const String &logText, const String &filename)
 {
-    Serial.println("Saving log to: " + filename);
+    Serial.println("[SD Manager] Saving log to: " + filename);
 
     // Check if the SD card is initialized
     if (!init())
         return false;
+
     // Open the file in append mode
     File file = SD_MMC.open(filename, FILE_APPEND);
     // Check if the file was opened successfully
@@ -95,7 +100,7 @@ bool SDManager::saveImage(const uint8_t *data, size_t length, const String &file
     file.close();             // Close the file
     deinit();                 // Deinitialize the SD card
 
-    Serial.println("Image saved to: " + filename); // For debugging
+    Serial.println("[SD Manager] Image saved to: " + filename); // For debugging
 
     return true;
 }
