@@ -80,3 +80,17 @@ out/
 *.swp
 *.swo
 *.~*
+
+# OTHER FOLDERS
+python/modeling/karim
+python/modeling/matlab_inspiration
+
+# Image and text outputs (adjust as needed)
+*.jpg
+*.jpeg
+*.png
+*.txt
+
+# Logs or temp files (optional)
+*.log
+*.tmp
