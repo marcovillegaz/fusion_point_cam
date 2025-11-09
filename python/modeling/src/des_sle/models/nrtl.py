@@ -2,7 +2,7 @@
 
 from typing import Dict, List
 import numpy as np
-from models.activity_model import ActivityModel
+from des_sle.models.activity_model import ActivityModel
 
 
 class NRTL(ActivityModel):
@@ -46,8 +46,7 @@ class NRTL(ActivityModel):
         elif n > 2:
             return self._multicomponent_nrtl(x, params)
         else:
-            print("component are less than one, error.") # Improve this message
-            
+            print("component are less than one, error.")  # Improve this message
 
     def _binary_nrtl(self, x: np.ndarray, params: Dict) -> np.ndarray:
         """
