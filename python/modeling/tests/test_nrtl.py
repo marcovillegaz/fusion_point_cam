@@ -48,7 +48,7 @@ def chcl_urea_components():
     return [chcl, urea]
 
 
-# TEST COMPONENT CLASS
+# TEST COMPONENT CLASS (THIS SHOULD BE IN test_components.py)
 class TestComponent:
     """Test suite for Component class"""
 
