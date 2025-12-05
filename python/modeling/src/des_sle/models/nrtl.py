@@ -20,10 +20,15 @@ class NRTL(ActivityModel):
     where: Gij = exp(-alpha_ij·τij)
     """
 
-    def __init__(self):
+    def __init__(self, params):
         self.name = "NRTL"
+        self.set_params(params)
 
-    def activity_coefficient(self, x: np.ndarray, T: float, params: Dict) -> np.ndarray:
+    def set_params(self, params: Dict):
+        """Set NRTL parameters"""
+        self.params = params
+
+    def activity_coefficient(self, x: np.ndarray, T: float) -> np.ndarray:
         """
         Calculate NRTL activity coefficients.
 
@@ -36,26 +41,34 @@ class NRTL(ActivityModel):
             Array of activity coefficients [alpha_1, alpha_2, ..., alpha_n]
         """
 
-        self.validate_composition(x)
+        self.validate_composition(x)  # Method from parent class ActivityModel
 
         x = np.asarray(x)
         n = len(x)
 
         if n == 2:
-            return self._binary_nrtl(x, params)
+            return self._binary_nrtl(x, T, self.params)
         elif n > 2:
-            return self._multicomponent_nrtl(x, params)
+            return self._multicomponent_nrtl(x, self.params)
         else:
             print("component are less than one, error.")  # Improve this message
 
-    def _binary_nrtl(self, x: np.ndarray, params: Dict) -> np.ndarray:
+    def _binary_nrtl(self, x: np.ndarray, T: float, params: Dict) -> np.ndarray:
         """
         Calculate NRTL activity coefficients for binary system.
         Optimized implementation for 2-component systems.
         """
+
+        # Universal gas constant [J/(mol·K)]
+        R = 8.314
+
         # Extract parameters
-        tau12 = params["tau12"]
-        tau21 = params["tau21"]
+        g12 = params["g12"]  # J/mol
+        g21 = params["g21"]  # J/mol
+
+        tau12 = g12 / (R * T)
+        tau21 = g21 / (R * T)
+
         alpha12 = params.get("alpha12", 0.3)  # Default alpha = 0.3
 
         # Mole fractions
@@ -66,14 +79,14 @@ class NRTL(ActivityModel):
         G21 = np.exp(-alpha12 * tau21)
 
         # Activity coefficient for component 1
-        term1_1 = tau21 * G21 / (x1 + x2 * G21)
-        term2_1 = tau12 * G12 / (x2 + x1 * G12)
-        ln_gamma1 = x2**2 * (term1_1 + term2_1**2)
+        term1_1 = tau21 * ((G21 / (x1 + x2 * G21)) ** 2)
+        term1_2 = (tau12 * G12) / ((x2 + x1 * G12) ** 2)
+        ln_gamma1 = x2**2 * (term1_1 + term1_2)
 
         # Activity coefficient for component 2
-        term1_2 = tau12 * G12 / (x2 + x1 * G12)
-        term2_2 = tau21 * G21 / (x1 + x2 * G21)
-        ln_gamma2 = x1**2 * (term1_2 + term2_2**2)
+        term2_1 = tau12 * ((G12 / (x2 + x1 * G12)) ** 2)
+        term2_2 = (tau21 * G21) / ((x1 + x2 * G21) ** 2)
+        ln_gamma2 = x1**2 * (term2_1 + term2_2)
 
         gamma1 = np.exp(ln_gamma1)
         gamma2 = np.exp(ln_gamma2)

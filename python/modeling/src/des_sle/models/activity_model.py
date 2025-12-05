@@ -15,7 +15,7 @@ class ActivityModel(ABC):
     """
 
     @abstractmethod
-    def activity_coefficient(self, x: np.ndarray, T: float, params: Dict) -> np.ndarray:
+    def activity_coefficient(self, x: np.ndarray, T: float) -> np.ndarray:
         """
         Calculate activity coefficients for all components.
 
