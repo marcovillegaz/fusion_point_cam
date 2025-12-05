@@ -2,7 +2,7 @@
 
 from typing import Dict, List
 import numpy as np
-from des_sle.models.activity_model import ActivityModel
+from des_sle.thermo.activity_model import ActivityModel
 
 
 class NRTL(ActivityModel):
