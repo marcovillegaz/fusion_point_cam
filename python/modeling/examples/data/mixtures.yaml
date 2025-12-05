@@ -1,0 +1,42 @@
+# mixtures.yaml
+
+mixtures:
+  Pe4NBr_SuccinicAcid:
+    components:
+      - name: Pe4NBr
+        Tm: 373.2
+        dHfus: 414500
+      - name: Succinic acid
+        Tm: 461.0      # K
+        dHfus: 377000    # J/mol
+    nrtl_params:
+      g12: -2578.1
+      g21: -9225.3
+      alpha12: 0.3
+
+  Pe4NBr_Erythritol:
+    components:
+      - name: Pe4NBr
+        Tm: 373.2
+        dHfus: 414500
+      - name: Erythritol
+        Tm: 392.2
+        dHfus: 394000
+    nrtl_params:
+      g12: -1567.0
+      g21: -4735.4
+      alpha12: 0.3
+
+  Pe4NBr_PimelicAcid:
+    components:
+      - name: Pe4NBr
+        Tm: 373.2
+        dHfus: 414500
+      - name: Pimelic acid
+        Tm: 379.2
+        dHfus: 237000
+    nrtl_params:
+      g12: -2578.1
+      g21: -9125.3
+      alpha12: 0.3
+
