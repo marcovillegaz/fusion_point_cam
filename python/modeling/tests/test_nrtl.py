@@ -7,7 +7,8 @@ Run with: pytest tests/test_nrtl.py -v
 
 import pytest
 import numpy as np
-from numpy.testing import assert_allclose, assert_array_less
+
+from numpy.testing import assert_allclose  # , assert_array_less
 
 # Import from your source code (adjust path as needed)
 # Assuming structure: src/des_sle/...
