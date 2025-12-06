@@ -25,4 +25,8 @@ This function is very important because it applies filtering algorithm of the im
 
 - steps (dict): is the pipeline that process a image 
 - prefilter_fn: this kind of function classify the image base in a criteria, for example by a brightness level. 
-- 
+
+
+
+
+Darle un tratamiento especial a Ty-lau 0.8
