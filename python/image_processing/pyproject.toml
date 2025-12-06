@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mpc-img-processing"
+version = "0.1.0"
+description = "Image processing pipeline for fusion point camera experiments"
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [
+    { name = "Marco", email = "marco@example.com" }
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+    "contourpy>=1.3.2",
+    "cycler>=0.12.1",
+    "fonttools>=4.58.0",
+    "kiwisolver>=1.4.8",
+    "matplotlib>=3.10.3",
+    "numpy>=2.2.6",
+    "opencv-python>=4.11.0.86",
+    "packaging>=25.0",
+    "pandas>=2.2.3",
+    "pillow>=11.2.1",
+    "pyparsing>=3.2.3",
+    "python-dateutil>=2.9.0",
+    "pytz>=2025.2",
+    "scipy>=1.11.0",
+    "six>=1.17.0",
+    "tzdata>=2025.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "black>=23.0",
+    "flake8>=6.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"*" = ["*.txt", "*.md"]
