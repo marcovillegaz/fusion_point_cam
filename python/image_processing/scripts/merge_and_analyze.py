@@ -1,6 +1,4 @@
-from src.analysis.plot_results import *
-from src.analysis.io import *
-from src.analysis.compute_stats import *
+from mpc_img_processing.analysis import plot_time_series, load_data
 
 experiment = "test4"
 
