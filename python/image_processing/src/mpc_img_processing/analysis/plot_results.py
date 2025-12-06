@@ -1,7 +1,14 @@
+"""
+Module for plotting analysis results of image processing metrics
+"""
+
 import matplotlib.pyplot as plt
 
 
 def plot_temperature_vs_metric(df, metric_col):
+    """
+    Plot temperature against a specified metric.
+    """
     fig, ax1 = plt.subplots(figsize=(8, 5))
     ax1.plot(df["temperature"], df[metric_col], marker=".")
     ax1.set_xlabel("Temperature °C")
@@ -12,6 +19,9 @@ def plot_temperature_vs_metric(df, metric_col):
 
 
 def plot_time_series(df, metric_col):
+    """
+    Plot time series of temperature and a specified metric.
+    """
     fig, ax1 = plt.subplots(figsize=(8, 5))
     ax1.set_xlabel("Time [sec]")
 
@@ -36,6 +46,9 @@ def plot_time_series(df, metric_col):
 
 
 def plot_slope_and_peaks(time, slope, peaks):
+    """
+    Plot the slope of a smoothed metric and highlight detected peaks.
+    """
     plt.figure(figsize=(8, 4))
     plt.plot(time[1:], slope, label="Slope")
     plt.scatter(time[1:][peaks], slope[peaks], color="red", label="Peaks")
