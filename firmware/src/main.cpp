@@ -1,3 +1,42 @@
+/**
+ * @file main.cpp
+ * @brief Main firmware for deep eutectic solvent temperature monitoring and imaging system
+ *
+ * This firmware coordinates multiple subsystems to perform synchronized temperature logging
+ * and image capture of deep eutectic solvent (DES) experiments. The system manages GPIO
+ * resource conflicts between the DS18B20 temperature sensor and ESP32-CAM camera module,
+ * both sharing GPIO4.
+ *
+ * System Architecture:
+ * - Temperature monitoring: DS18B20 sensor via 1-Wire protocol
+ * - Visual documentation: ESP32-CAM with OV2640 sensor
+ * - Data persistence: SD card via SD_MMC interface
+ * - User interface: Serial communication for experiment naming
+ *
+ * Experimental Workflow:
+ * 1. User provides experiment name via Serial
+ * 2. System creates log file with CSV header
+ * 3. Temperature readings taken at regular intervals
+ * 4. Readings buffered in RAM for batch writing
+ * 5. Periodic image capture synchronized with temperature logging
+ * 6. Data and images saved to SD card with consistent naming
+ *
+ * Scientific Application:
+ * This system is designed for studying thermal properties of deep eutectic solvents,
+ * including phase transitions, melting points, and thermal stability. The synchronized
+ * temperature and image data enables correlation between thermal and visual observations.
+ *
+ * Hardware Requirements:
+ * - ESP32-CAM board with OV2640 camera
+ * - DS18B20 temperature sensor on GPIO4
+ * - SD card (FAT32 recommended)
+ * - 4.7kΩ pull-up resistor on DS18B20 data line
+ *
+ * Author: [Research Team]
+ * Date: December 2025
+ * Purpose: Deep Eutectic Solvent Research
+ */
+
 #include <Arduino.h>
 
 #include "wifi_setup.h"
@@ -7,9 +46,23 @@
 #include "SDManager.h"
 #include "WebServerManager.h"
 
-#include "secrets.h" // Include your WiFi credentials here
+#include "secrets.h" // WiFi credentials (not version controlled)
 
-// --- Constants ---
+// ============================================================================
+// CONFIGURATION CONSTANTS
+// ============================================================================
+
+/**
+ * @brief GPIO pin for DS18B20 temperature sensor
+ *
+ * WARNING: GPIO4 is shared between the DS18B20 sensor and the camera's flash LED.
+ * Careful initialization and deinitialization sequences are required to prevent conflicts.
+ *
+ * Resource Management:
+ * - Temperature reading: DS18B20 uses GPIO4 as 1-Wire data line
+ * - Camera operation: GPIO4 configured LOW to disable flash LED
+ * - Conflict resolution: Explicit init/deinit cycles in main loop
+ */
 #define TEMP_SENSOR_PIN 4
 
 // IPAddress staticIP(192, 168, 1, 184); // Optional static IP
