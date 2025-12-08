@@ -32,6 +32,15 @@ pip install -e .
 python -c "from des_sle import Component, NRTL; print('✓ Installation successful!')"
 ```
 
+**Dependencies installed:**
+- `numpy` - Numerical computations
+- `scipy` - Optimization algorithms (differential evolution, fsolve)
+- `pandas` - CSV data loading and manipulation
+- `matplotlib` - Phase diagram plotting
+- `pyyaml` - YAML parameter file handling
+
+All dependencies are automatically installed with `pip install -e .`
+
 ## Complete Workflow Example
 
 ### Step 1: Prepare Your Data
