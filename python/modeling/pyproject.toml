@@ -52,7 +52,7 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 minversion = "7.0"
-addopts = "-ra -q --strict-markers"
+# addopts = "-ra -q --strict-markers"
 testpaths = ["tests"]
 pythonpath = ["src"]
 markers = [
@@ -99,3 +99,6 @@ python_version = "3.8"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false
+
+[tool.pylint.main]
+init-hook = 'import sys; sys.path.append("src")'
