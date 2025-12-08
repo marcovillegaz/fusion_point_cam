@@ -1,29 +1,22 @@
-"""This scripts contains function that extract metrics from images.
-This functions are used in ImagePipeline Instances"""
+"""This script contains function that extracts brightness metrics from images.
+This function is used in ImagePipeline Instances"""
 
 import numpy as np
-import cv2
 
 # Metrics return a dict with the metric name as key
 
 
 def brightness_stats(img):
+    """
+    Calculate brightness statistics from a grayscale image.
+
+    Args:
+        img: Grayscale image array
+
+    Returns:
+        dict: Dictionary with 'brightness' (mean) and 'brightness_median' values
+    """
     return {
         "brightness": img.mean(),
         "brightness_median": np.median(img),
     }
-
-
-def edge_density(img):
-    edges = cv2.Canny(img, 100, 200)
-    density = edges.sum() / edges.size
-    return {"edge_density": density}
-
-
-def contrast_rms(img):
-    return {"contrast_rms": float(np.std(img))}
-
-
-def sharpness_laplacian(img):
-    laplacian_var = cv2.Laplacian(img, cv2.CV_64F).var()
-    return {"sharpness": float(laplacian_var)}

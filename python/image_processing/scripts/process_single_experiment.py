@@ -13,9 +13,6 @@ from mpc_img_processing.utils import (
     apply_blur,
     filter_bright_image,
     brightness_stats,
-    edge_density,
-    sharpness_laplacian,
-    contrast_rms,
 )
 
 # ============================================================
@@ -25,8 +22,8 @@ from mpc_img_processing.utils import (
 # Main working directory
 working_path = r"D:\Users\marco\Desktop\Fotos del paper\Thymol-Ac. Laurico"
 
-# ❗ Set the experiment you want to reprocess
-experiment = "EXP_002"  # <--- change this
+# Set the experiment you want to reprocess
+experiment = "Ty-lau 0.8"  # <--- change this
 
 # ============================================================
 # --- IMAGE PROCESSING CONFIG --------------------------------
@@ -35,18 +32,13 @@ experiment = "EXP_002"  # <--- change this
 prefilter = lambda img: filter_bright_image(img, brightness_threshold=30)
 
 steps = [
-    ("cropped", lambda img: crop_image(img, x=200, y=0, width=310, height=540)),
+    ("cropped", lambda img: crop_image(img, x=200, y=300, width=310, height=300)),
     ("greyscale", to_grayscale),
     ("normalize", normalize_clahe),
     ("blurred", apply_blur),
 ]
 
-postprocess = [
-    brightness_stats,
-    edge_density,
-    sharpness_laplacian,
-    contrast_rms,
-]
+postprocess = [brightness_stats]
 
 pipeline = ImagePipeline(
     steps=steps,

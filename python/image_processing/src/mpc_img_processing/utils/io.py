@@ -48,30 +48,9 @@ def save_metric(df: pd.DataFrame, output_folder: str, metric_name: str):
     print(f"[POST PROCESS] Saved {metric_name} to {save_path}")
 
 
-def create_gif_from_folder(input_folder, output_path, duration=0.3):
-    """
-    Create a GIF from all images in the specified folder.
-
-    Args:
-        input_folder (str): Folder containing image frames.
-        output_path (str): Path to save the output GIF.
-        duration (float): Duration per frame in seconds.
-    """
-    """ valid_exts = (".jpg", ".jpeg", ".png", ".bmp")
-    image_files = sorted(
-        [
-            os.path.join(input_folder, f)
-            for f in os.listdir(input_folder)
-            if f.lower().endswith(valid_exts)
-        ]
-    )
-
-    if not image_files:
-        print("No valid images found.")
-        return
-
-    print(f"Creating GIF with {len(image_files)} frames...")
-    images = [imageio.imread(img) for img in image_files]
-    imageio.mimsave(output_path, images, duration=duration)
-    print(f"GIF saved to {output_path}")
- """
+def load_data(csv_path):
+    """Load the CSV file with metrics data."""
+    df = pd.read_csv(csv_path)
+    # Strip whitespace from column names
+    df.columns = df.columns.str.strip()
+    return df

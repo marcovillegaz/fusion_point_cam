@@ -15,9 +15,6 @@ from mpc_img_processing.utils import (
     apply_blur,
     filter_bright_image,
     brightness_stats,
-    edge_density,
-    sharpness_laplacian,
-    contrast_rms,
 )
 
 
@@ -37,12 +34,7 @@ steps = [
 ]
 
 # Define your postprocessing pipeline (list)
-postprocess = [
-    brightness_stats,
-    edge_density,
-    sharpness_laplacian,
-    contrast_rms,
-]
+postprocess = [brightness_stats]
 
 # Instantiate pipeline
 pipeline = ImagePipeline(
