@@ -40,7 +40,7 @@ def plot_sle_diagram(
         plt.scatter(x_liquidus, T_liquidus, color="blue", marker=".", label="Liquidus (exp.)")
 
     # Axes and formatting
-    plt.ylim(340, 400)
+    # plt.ylim(340, 400)
     plt.xlim(0, 1)
     plt.xlabel(f"Mole fraction of {components[0].name}")
     plt.ylabel("Equilibrium temperature (K)")
