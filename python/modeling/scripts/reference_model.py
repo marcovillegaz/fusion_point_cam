@@ -21,12 +21,11 @@ from des_sle.plot.diagrams import plot_sle_diagram
 
 
 # Load experimental data
-x_solidus, T_solidus = load_phase_diagram_csv("examples/solidus.csv")
-x_liquidus, T_liquidus = load_phase_diagram_csv("examples/liquidus.csv")
+x_solidus, T_solidus = load_phase_diagram_csv("data/reference_examples/solidus.csv")
+x_liquidus, T_liquidus = load_phase_diagram_csv("data/reference_examples/liquidus.csv")
 
 # Load mixture definition (e.g. Pe4NBr + Erythritol)
-components, params = load_mixture("examples/data/mixtures.yaml", "Pe4NBr_SuccinicAcid")
-
+components, params = load_mixture("data/reference_examples/mixtures.yaml", "Pe4NBr_Erythritol")
 # thermodynamic model isntance
 model = NRTL(params)
 
